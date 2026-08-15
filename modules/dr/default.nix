@@ -32,7 +32,7 @@ in
       description = "Restack restic backup";
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.restic}/bin/restic backup /var/lib/postgresql";
+        ExecStart = "${pkgs.restic}/bin/restic backup /var/lib/mongodb";
       };
     };
 
