@@ -7,6 +7,4 @@
   ];
 
   restack.documentExtractor.enable = true;
-
-  networking.hostName = "restack-personal";
 }
