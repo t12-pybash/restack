@@ -28,6 +28,10 @@
     allowedTCPPorts = [ 22 ];
   };
 
+  # Bootloader — all nodes use UEFI/OVMF
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
   # Nix settings
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
