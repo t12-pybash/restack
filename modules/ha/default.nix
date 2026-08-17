@@ -20,7 +20,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "mongodb" ];
+    nixpkgs.config.allowUnfree = true;
 
     services.mongodb = {
       enable = true;
