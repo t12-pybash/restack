@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   # Locale and timezone
@@ -37,6 +37,20 @@
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
   };
+
+  # Serial console — enables virsh console access
+  boot.kernelParams = [ "console=ttyS0" ];
+
+  # Admin user with SSH key from midir
+  users.users.nixos = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+qTeCq+AnE6mCD6/9kFe4wR0VAC1BfvkrYw8MnpQbS pybashinf@gmail.com"
+    ];
+  };
+
+  security.sudo.wheelNeedsPassword = false;
 
   system.stateVersion = "25.05";
 }
