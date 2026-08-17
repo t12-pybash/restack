@@ -21,13 +21,10 @@ in
 
   config = lib.mkIf cfg.enable {
     nixpkgs.config.allowUnfree = true;
-    # CVE-2025-14847 affects all MongoDB versions in nixpkgs 25.05 — permitted for dev VMs;
-    # upgrade path: pin to a patched build once available upstream
-    nixpkgs.config.permittedInsecurePackages = [ "mongodb-6.0.23" ];
 
     services.mongodb = {
       enable = true;
-      package = pkgs.mongodb-6_0;
+      package = pkgs.mongodb-bin;
       extraConfig = ''
         replication:
           replSetName: "${cfg.replicaSetName}"
