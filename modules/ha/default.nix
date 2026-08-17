@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.restack.ha;
@@ -24,6 +24,7 @@ in
 
     services.mongodb = {
       enable = true;
+      package = pkgs.mongodb-6_0;
       extraConfig = ''
         replication:
           replSetName: "${cfg.replicaSetName}"
