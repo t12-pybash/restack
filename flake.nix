@@ -13,14 +13,12 @@
     {
       nixosConfigurations = {
 
-        # Personal profile — single node, document extractor; also arbiter for HA replica set
+        # Personal profile — single node, document extractor
         nix-node-1 = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
             ./hosts/nix-node-1
             ./profiles/personal
-            ./modules/ha
-            { restack.ha = { enable = true; role = "arbiter"; }; }
           ];
         };
 
