@@ -8,7 +8,7 @@ in
     enable = lib.mkEnableOption "Restack HA module (MongoDB replica set)";
 
     role = lib.mkOption {
-      type = lib.types.enum [ "primary" "replica" ];
+      type = lib.types.enum [ "primary" "replica" "arbiter" ];
       description = "Role of this node in the replica set.";
     };
 
