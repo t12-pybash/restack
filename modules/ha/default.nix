@@ -24,7 +24,7 @@ in
 
     services.mongodb = {
       enable = true;
-      package = pkgs.mongodb-bin;
+      package = pkgs.callPackage ../../packages/mongodb-prebuilt.nix {};
       extraConfig = ''
         replication:
           replSetName: "${cfg.replicaSetName}"
