@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian12-${version}.tgz";
-    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    hash = "sha256-rohDM2BEHmieYmljr+HM040vCSkIHOSe2r0xhrBBHYA=";
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];

@@ -36,6 +36,7 @@
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
+    require-sigs = false;
   };
 
   # Serial console — enables virsh console access

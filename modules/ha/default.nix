@@ -25,6 +25,7 @@ in
     services.mongodb = {
       enable = true;
       package = pkgs.callPackage ../../packages/mongodb-prebuilt.nix {};
+      bind_ip = "0.0.0.0";
       extraConfig = ''
         replication:
           replSetName: "${cfg.replicaSetName}"
