@@ -52,12 +52,16 @@ in
     # replica connects and streams automatically on every subsequent boot.
     systemd.services.postgresql-replica-init = lib.mkIf (cfg.role == "replica") {
       description = "Bootstrap PostgreSQL replica from primary via pg_basebackup";
+      after = [ "systemd-tmpfiles-setup.service" "network-online.target" ];
+      wants = [ "network-online.target" ];
       before = [ "postgresql.service" ];
       requiredBy = [ "postgresql.service" ];
       serviceConfig = {
         Type = "oneshot";
         User = "postgres";
         RemainAfterExit = true;
+        StateDirectory = "postgresql";
+        StateDirectoryMode = "0700";
       };
       script =
         let
