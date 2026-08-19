@@ -12,43 +12,75 @@ in
       description = "Restic backup repository path or URL.";
     };
 
+    passwordFile = lib.mkOption {
+      type = lib.types.str;
+      default = "/etc/restack/restic-password";
+      description = ''
+        Path to file containing the restic repository password.
+        Must be readable by the postgres user.
+        Initialise the repo once with: restic -r <backupRepo> init
+      '';
+    };
+
     restoreCheckInterval = lib.mkOption {
       type = lib.types.str;
       default = "weekly";
-      description = "How often to run the automated restore check.";
+      description = "How often to run the automated restore check (systemd calendar spec).";
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [ restic ];
 
-    # Backup timer
-    systemd.timers.restack-backup = {
-      wantedBy = [ "timers.target" ];
-      timerConfig.OnCalendar = "daily";
-    };
-
+    # Backup: pg_dumpall piped into restic stdin — atomic, no temp disk required
     systemd.services.restack-backup = {
-      description = "Restack restic backup";
+      description = "Restack PostgreSQL backup via restic";
+      after = [ "postgresql.service" "network.target" ];
+      wants = [ "network.target" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.restic}/bin/restic backup /var/lib/mongodb";
+        User = "postgres";
+        ExecStart = pkgs.writeShellScript "restack-backup" ''
+          export RESTIC_REPOSITORY="${cfg.backupRepo}"
+          export RESTIC_PASSWORD_FILE="${cfg.passwordFile}"
+          ${pkgs.postgresql_16}/bin/pg_dumpall | \
+            ${pkgs.restic}/bin/restic backup --stdin --stdin-filename postgres.sql
+        '';
       };
     };
 
-    # Restore check timer — this is the verifiable DR property
-    systemd.timers.restack-dr-check = {
+    systemd.timers.restack-backup = {
       wantedBy = [ "timers.target" ];
-      timerConfig.OnCalendar = cfg.restoreCheckInterval;
+      timerConfig = {
+        OnCalendar = "daily";
+        Persistent = true;
+      };
     };
 
+    # Restore check: pull latest snapshot from restic, verify it contains table definitions.
+    # Exits non-zero on failure — surfaces via systemd unit status and can be scraped by Prometheus.
     systemd.services.restack-dr-check = {
       description = "Restack automated restore check";
       serviceConfig = {
         Type = "oneshot";
-        # Restore to a scratch location and verify integrity
-        # Exits non-zero on failure — surfaced via systemd unit status / Prometheus
-        ExecStart = "${pkgs.restic}/bin/restic restore latest --target /tmp/dr-check --verify";
+        ExecStart = pkgs.writeShellScript "restack-dr-check" ''
+          export RESTIC_REPOSITORY="${cfg.backupRepo}"
+          export RESTIC_PASSWORD_FILE="${cfg.passwordFile}"
+          TABLES=$(${pkgs.restic}/bin/restic dump latest postgres.sql | grep -c "^CREATE TABLE")
+          if [ "$TABLES" -eq 0 ]; then
+            echo "DR check FAILED: backup contains no CREATE TABLE statements" >&2
+            exit 1
+          fi
+          echo "DR check passed: $TABLES tables verified in latest backup"
+        '';
+      };
+    };
+
+    systemd.timers.restack-dr-check = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = cfg.restoreCheckInterval;
+        Persistent = true;
       };
     };
   };

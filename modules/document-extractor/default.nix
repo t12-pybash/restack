@@ -14,11 +14,20 @@ in
     };
   };
 
-  # Placeholder — Alessandro's prototype to be wired in here
-  # Package derivation will live in pkgs/document-extractor/
   config = lib.mkIf cfg.enable {
     networking.firewall.allowedTCPPorts = [ cfg.port ];
 
-    # systemd.services.document-extractor = { ... };
+    systemd.services.document-extractor = {
+      description = "Restack document extractor (Apache Tika server)";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.tika}/bin/tika-server -p ${toString cfg.port}";
+        Restart = "on-failure";
+        RestartSec = "5s";
+        DynamicUser = true;
+        StateDirectory = "document-extractor";
+      };
+    };
   };
 }
