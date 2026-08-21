@@ -2,6 +2,10 @@
 
 ## 2026-08-21
 
+**Housekeeping**
+- Added `CHANGELOG.md` (this file) — restack-specific history, separate from homelab gitops changelog
+- UUID check: all three hardware-configuration.nix files have unique UUIDs; verify against live disks next time VMs are running
+
 **feat/ferretdb branch**
 - Created `feat/ferretdb` branch — FerretDB module (Apache-2.0, MongoDB wire protocol over PostgreSQL)
 - `modules/ferretdb/default.nix` — FerretDB systemd service on port 27017, PostgreSQL backend via `ensureDatabases`/`ensureUsers`; enabled in org profile on this branch
